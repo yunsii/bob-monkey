@@ -8,6 +8,9 @@ export function pushToHistory() {
   if (pathname.split('/').filter(Boolean).length !== 2) {
     return
   }
+  if (pathname.startsWith('/search/')) {
+    return
+  }
   const history = GM_getValue<string[]>(deepwikiHistoryCacheKey, [])
   const newHistory = [pathname, ...history.filter((item) => item !== pathname)].slice(0, 50)
   GM_setValue(deepwikiHistoryCacheKey, newHistory)
