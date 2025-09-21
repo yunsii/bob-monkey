@@ -25,7 +25,7 @@ export function reactRenderInShadowRoot(
   const _app = typeof app === 'function' ? React.createElement(React.lazy(app)) : app
 
   const rootContext = document.createElement('div')
-  rootContext.id = 'starter-monkey-root'
+  rootContext.id = 'bob-monkey-root'
   uiContainer.appendChild(rootContext)
   const root = ReactDOM.createRoot(rootContext)
 

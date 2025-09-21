@@ -4,9 +4,8 @@ import { createShadowRootUi } from '@/helpers/ui/shadow-root'
 const Script: Userscript = async () => {
   const ui = await createShadowRootUi(
     {
-      name: 'google-demo',
+      name: 'deepwiki-shortcut',
       position: 'inline',
-      anchor: 'body',
       onMount: (container, shadowRoot, shadowHost) => {
         return reactRenderInShadowRoot(
           { uiContainer: container, shadow: shadowRoot, shadowHost },
@@ -16,10 +15,12 @@ const Script: Userscript = async () => {
     },
   )
 
-  ui.mount()
+  ui.autoMount({
+    once: false,
+  })
 }
 
-Script.displayName = 'google-demo'
-Script.matches = ['https://www.google.com/']
+Script.displayName = 'deepwiki-shortcut'
+Script.matches = ['https://github.com/*/*']
 
 export default Script

@@ -8,14 +8,14 @@ function print(method: (...args: any[]) => void, ...args: any[]) {
 
   if (typeof args[0] === 'string') {
     const message = args.shift()
-    method(`[starter-monkey] ${message}`, ...args)
+    method(`[bob-monkey] ${message}`, ...args)
   } else {
-    method('[starter-monkey]', ...args)
+    method('[bob-monkey]', ...args)
   }
 }
 
 /**
- * Wrapper around `console` with a "[starter-monkey]" prefix
+ * Wrapper around `console` with a "[bob-monkey]" prefix
  */
 export const logger = {
   debug: (...args: any[]) => print(console.debug, ...args),

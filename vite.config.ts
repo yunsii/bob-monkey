@@ -7,8 +7,8 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 import type { Plugin } from 'vite'
 
+import { description, name } from './package.json'
 import { getScriptInfos, printScriptInfos } from './scripts/script-infos'
-import { localesMeta } from './src/locales/meta'
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => {
@@ -44,8 +44,8 @@ export default defineConfig(async () => {
       monkey({
         entry: 'src/main.ts',
         userscript: {
-          name: localesMeta.name,
-          description: localesMeta.description,
+          name,
+          description,
           icon: 'https://vitejs.dev/logo.svg',
           namespace: 'yuns',
           match: allMatches,
