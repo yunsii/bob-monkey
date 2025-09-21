@@ -40,6 +40,5 @@ export default function App() {
     })
   })
 
-  // 不直接渲染任何 DOM
   return null
 }
