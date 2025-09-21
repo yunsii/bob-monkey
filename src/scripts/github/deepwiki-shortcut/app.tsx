@@ -22,7 +22,7 @@ export default function App() {
               active:scale-95 active:transform active:bg-blue-100
             `}
             onClick={() => {
-              window.open(`https://www.deepwiki.com/${location.pathname}`, '_blank')
+              window.open(`https://deepwiki.com${location.pathname}`, '_blank')
             }}
             title='在 DeepWiki 中查看此页面'
           >
