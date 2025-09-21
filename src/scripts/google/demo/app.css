@@ -1,0 +1,9 @@
+@reference '#tailwind-config.css';
+
+#starter-monkey-root {
+  @apply mx-auto my-0 p-8 max-w-320 text-center;
+}
+
+body {
+  @apply flex items-center;
+}
