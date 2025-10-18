@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { getHistory, removeFromHistory } from '../../helpers/cache'
 import { HistoryTag } from '../history-tag'
@@ -6,9 +6,16 @@ import { HistoryTag } from '../history-tag'
 export function HistoryPanel() {
   const [query, setQuery] = useState('')
   const [history, setHistory] = useState<string[]>(() => getHistory())
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const filteredHistory = useMemo(() => {
     return history.filter((path) => path.toLowerCase().includes(query.toLowerCase()))
   }, [history, query])
+
+  useEffect(() => {
+    // 组件挂载后自动 focus 输入框
+    inputRef.current?.focus()
+  }, [])
 
   const handleRemove = (path: string) => {
     removeFromHistory(path)
@@ -36,6 +43,7 @@ export function HistoryPanel() {
           `}
           />
           <input
+            ref={inputRef}
             type='text'
             placeholder='搜索历史记录...'
             value={query}
