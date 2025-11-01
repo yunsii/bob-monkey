@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { useElementsMutationObserver } from 'react-dx'
 
+import type { Promisable } from 'type-fest'
+
 interface UiLike { mount: () => void, remove: () => void }
 
 export function useCreateUis(
   selectors: string,
-  createFn: (element: Element) => Promise<UiLike>,
+  createFn: (element: Element) => Promisable<UiLike | void>,
 ) {
   const uiMap = useRef<WeakMap<Element, UiLike>>(new WeakMap())
   const versionMap = useRef(new WeakMap<Element, number>())
@@ -40,7 +42,11 @@ export function useCreateUis(
       versionMap.current.set(element, currentVersion)
 
       // 2) start creation (allow concurrent creates). When done, only the latest version is kept
-      createFn(element).then((createdUi) => {
+      Promise.resolve(createFn(element)).then((createdUi) => {
+        if (!createdUi) {
+          return
+        }
+
         const latestVersion = versionMap.current.get(element) ?? 0
         if (latestVersion !== currentVersion) {
           // stale ui instance, remove and exit

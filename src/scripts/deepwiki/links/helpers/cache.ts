@@ -1,14 +1,12 @@
 import { GM_getValue, GM_setValue } from '$'
 
+import { isRepoPage } from '../../_helpers/repo'
+
 const deepwikiHistoryCacheKey = 'deepwiki-history-cache-v1'
 
 export function pushToHistory() {
   const pathname = location.pathname
-  // Only cache paths like /owner/repo
-  if (pathname.split('/').filter(Boolean).length !== 2) {
-    return
-  }
-  if (pathname.startsWith('/search/')) {
+  if (!isRepoPage()) {
     return
   }
   const history = GM_getValue<string[]>(deepwikiHistoryCacheKey, [])

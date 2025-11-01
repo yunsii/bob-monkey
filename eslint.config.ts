@@ -4,6 +4,9 @@ import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss'
 
 export default janna({
   formatters: true,
+  ignores: [
+    '.github/copilot-instructions.md',
+  ],
 }, {
   files: [`src/${GLOB_SRC}`],
   languageOptions: {
