@@ -1,7 +1,17 @@
 import useCreateUis from '@/hooks/ui'
 
+const selector = '[data-testid="top-nav-center"] > nav > ol > li:nth-of-type(2)'
+
 export default function App() {
-  useCreateUis('nav context-region-crumb:nth-of-type(2)', async (element) => {
+  useEffect(() => {
+    const target = document.querySelector(selector)
+
+    if (!target) {
+      console.warn('DeepWiki shortcut: target element not found')
+    }
+  }, [])
+
+  useCreateUis(selector, async (element) => {
     return createShadowRootUi({
       name: 'deepwiki-shortcut-item',
       position: 'inline',
