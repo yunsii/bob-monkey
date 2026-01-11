@@ -1,8 +1,10 @@
-import React from 'react'
+import { Typography } from 'antd'
 
 import { formatTime } from '../../utils/time-formatter'
 
 import type { AskHistoryItem } from '../../helpers/cache'
+
+const { Paragraph, Text } = Typography
 
 export interface HistoryItemProps {
   item: AskHistoryItem
@@ -19,8 +21,8 @@ function HistoryItem({ item, isLatest, isLast, onQuestionClick }: HistoryItemPro
   const baseClasses = 'p-2 cursor-pointer rounded-md border transition-colors duration-200'
   const marginClass = isLast ? 'mb-0' : 'mb-2'
   const styleClasses = isLatest
-    ? 'border-emerald-500 bg-emerald-800 hover:bg-emerald-700'
-    : 'border-gray-600 bg-gray-700 hover:bg-gray-600'
+    ? 'border-blue-400 bg-blue-50 hover:bg-blue-100 dark:border-blue-500 dark:bg-blue-950 dark:hover:bg-blue-900'
+    : 'border-gray-300 bg-gray-50 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:hover:bg-gray-700'
 
   return (
     <div
@@ -31,17 +33,33 @@ function HistoryItem({ item, isLatest, isLast, onQuestionClick }: HistoryItemPro
       `}
       onClick={handleClick}
     >
-      <div className='mb-1 break-words text-gray-100'>
-        {item.question.length > 50
-          ? `${item.question.substring(0, 50)}...`
-          : item.question}
-      </div>
-      <div className='flex items-center justify-between text-xs text-gray-400'>
-        <span>{formatTime(item.timestamp)}</span>
+      <Paragraph
+        ellipsis={{ rows: 2, tooltip: item.question }}
+        className={`
+          mb-2 text-gray-900
+          dark:text-gray-50
+        `}
+      >
+        {item.question}
+      </Paragraph>
+      <div className='flex items-center justify-between'>
+        <Text className={`
+          text-xs text-gray-600
+          dark:text-gray-400
+        `}
+        >
+          {formatTime(item.timestamp)}
+        </Text>
         {isLatest && (
-          <span className='text-xs font-medium text-emerald-400'>
+          <Text
+            strong
+            className={`
+              text-xs text-blue-600
+              dark:text-blue-400
+            `}
+          >
             最新
-          </span>
+          </Text>
         )}
       </div>
     </div>

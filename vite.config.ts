@@ -63,14 +63,41 @@ export default defineConfig(async () => {
           include: allIncludes,
           grant: ['unsafeWindow'],
           noframes: true,
+          require: [
+            // Set React.default for antd UMD compatibility
+            'https://cdn.jsdelivr.net/npm/dayjs@1.11.19/dayjs.min.js',
+          ],
           license: 'MIT',
         },
         build: {
           externalGlobals: {
-            'react': cdn.jsdelivr('React', 'umd/react.production.min.js'),
-            'react-dom': cdn.jsdelivr(
+            'react': [
+              'React',
+              (version: string, name: string, importName: string) => {
+                return `https://cdn.jsdelivr.net/npm/react-umd@${version}/dist/react.umd.min.js`
+              },
+              // ref: https://github.com/ant-design/ant-design/issues/55889#issuecomment-3734211882
+              'data:application/javascript,window.React&&(window.React.default=window.React);',
+            ],
+            'react-dom': [
               'ReactDOM',
-              'umd/react-dom.production.min.js',
+              (version: string, name: string, importName: string) => {
+                return `https://cdn.jsdelivr.net/npm/react-umd@${version}/dist/react-dom.umd.min.js`
+              },
+            ],
+            'react-dom/client': [
+              'ReactDOMClient',
+              (version: string, name: string, importName: string) => {
+                return `https://cdn.jsdelivr.net/npm/react-umd@${version}/dist/react-dom-client.umd.min.js`
+              },
+            ],
+            '@ant-design/cssinjs': cdn.jsdelivr(
+              'antdCssinjs',
+              'dist/umd/cssinjs.min.js',
+            ),
+            'antd': cdn.jsdelivr(
+              'antd',
+              'dist/antd.min.js',
             ),
           },
         },

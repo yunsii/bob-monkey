@@ -1,12 +1,17 @@
+import { Input, Typography } from 'antd'
 import { useEffect, useMemo, useRef, useState } from 'react'
+
+import type { InputRef } from 'antd'
 
 import { getHistory, removeFromHistory } from '../../helpers/cache'
 import { HistoryTag } from '../history-tag'
 
+const { Title, Text } = Typography
+
 export function HistoryPanel() {
   const [query, setQuery] = useState('')
   const [history, setHistory] = useState<string[]>(() => getHistory())
-  const inputRef = useRef<HTMLInputElement>(null)
+  const inputRef = useRef<InputRef>(null)
 
   const filteredHistory = useMemo(() => {
     return history.filter((path) => path.toLowerCase().includes(query.toLowerCase()))
@@ -23,59 +28,54 @@ export function HistoryPanel() {
   }
 
   return (
-    <div className={`
-      flex max-h-96 flex-col overflow-hidden rounded-lg border border-gray-200
-      bg-gradient-to-br from-white to-gray-50 shadow-lg
-    `}
-    >
+    <div>
       <div className={`
         border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4
+        dark:border-gray-700 dark:from-blue-950 dark:to-indigo-950
       `}
       >
-        <h2 className='mb-3 flex items-center text-xl font-bold text-gray-800'>
-          <span className='mr-2 i-bx--time size-5 text-blue-600' />
-          历史记录
-        </h2>
-        <div className='relative'>
+        <Title level={4} className='mb-3 flex items-center'>
           <span className={`
-            pointer-events-none absolute top-1/2 left-3 i-bx--search size-5
-            -translate-y-1/2 text-gray-400
+            mr-2 i-bx--time size-5 text-blue-600
+            dark:text-blue-400
           `}
           />
-          <input
-            ref={inputRef}
-            type='text'
-            placeholder='搜索历史记录...'
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className={`
-              w-full rounded-lg border-2 border-gray-200 bg-white py-3 pr-4
-              pl-10 shadow-sm transition-all duration-300
-              focus:border-blue-500 focus:ring-4 focus:ring-blue-100
-              focus:outline-none
-            `}
-          />
-        </div>
+          历史记录
+        </Title>
+        <Input
+          ref={inputRef}
+          placeholder='搜索历史记录...'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          prefix={<span className='i-bx--search size-4' />}
+          allowClear
+          size='large'
+        />
       </div>
-      <div className='h-64 overflow-y-auto bg-white/50 p-4'>
+      <div className={`
+        h-64 overflow-y-auto bg-white/50 p-4
+        dark:bg-gray-900/50
+      `}
+      >
         {filteredHistory.length === 0
           ? (
               <div className='py-12 text-center'>
                 <span className={`
                   mx-auto mb-4 i-bx--question-mark block size-12 text-gray-300
+                  dark:text-gray-600
                 `}
                 />
-                <p className='text-lg text-gray-500'>
+                <Text className='block text-base' type='secondary'>
                   {query ? '未找到匹配的历史记录' : '暂无历史记录'}
-                </p>
-                <p className='mt-1 text-sm text-gray-400'>
+                </Text>
+                <Text className='mt-2 block text-sm' type='secondary'>
                   {query ? '请尝试调整搜索词' : '开始探索以建立历史记录！'}
-                </p>
+                </Text>
               </div>
             )
           : (
-              <div className='flex flex-wrap gap-3'>
-                {filteredHistory.map((path, index) => (
+              <div className='flex flex-wrap gap-4'>
+                {filteredHistory.map((path) => (
                   <HistoryTag
                     key={path}
                     path={path}

@@ -1,15 +1,12 @@
-import useCreateUis, { useShadowModal } from '@/hooks/ui'
+import { Modal } from 'antd'
+
+import useCreateUis from '@/hooks/ui'
 
 import { HistoryPanel } from './components/history-panel'
 import { pushToHistory } from './helpers/cache'
 
 export default function App() {
-  const { toggleModal: toggleEditorModal } = useShadowModal({
-    name: 'deepwiki-history-modal',
-    content: (
-      <HistoryPanel />
-    ),
-  })
+  const [modalOpen, setModalOpen] = useState(false)
 
   useCreateUis('button[aria-label="Switch to dark mode"]', async (element) => {
     pushToHistory()
@@ -30,7 +27,7 @@ export default function App() {
               hover:bg-gray-200
             `}
             onClick={() => {
-              toggleEditorModal()
+              setModalOpen(true)
             }}
             title='浏览记录'
           >
@@ -41,5 +38,17 @@ export default function App() {
     })
   })
 
-  return null
+  return (
+    <Modal
+      closable={false}
+      open={modalOpen}
+      footer={null}
+      onCancel={() => setModalOpen(false)}
+      classNames={{
+        container: cls`p-0 overflow-hidden`,
+      }}
+    >
+      <HistoryPanel />
+    </Modal>
+  )
 }

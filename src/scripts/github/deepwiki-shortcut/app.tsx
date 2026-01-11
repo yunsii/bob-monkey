@@ -1,3 +1,5 @@
+import { Button } from 'antd'
+
 import useCreateUis from '@/hooks/ui'
 
 const selector = '[data-testid="top-nav-center"] > nav > ol > li:nth-of-type(2)'
@@ -20,17 +22,14 @@ export default function App() {
         shadowHost.style.display = 'inline-block'
         return reactRenderInShadowRoot(
           { uiContainer: container, shadow: shadowRoot, shadowHost },
-          <button
-            type='button'
-            className={`
-              ml-2 inline-flex cursor-pointer items-center gap-1 rounded-md
-              border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium
-              transition-all duration-200
-              hover:border-blue-300 hover:bg-blue-50
-              focus:ring-2 focus:ring-blue-500 focus:ring-offset-1
-              focus:outline-none
-              active:scale-95 active:transform active:bg-blue-100
-            `}
+          <Button
+            type='default'
+            size='small'
+            icon={(
+              <span className='flex items-center justify-center'>
+                <span className='i-bx--brain size-4 text-blue-600' />
+              </span>
+            )}
             onClick={() => {
               window.open(`https://deepwiki.com${location.pathname}`, '_blank')
             }}
@@ -43,8 +42,7 @@ export default function App() {
             >
               DeepWiki
             </span>
-            <span className='i-bx--brain size-4 text-blue-600' />
-          </button>,
+          </Button>,
         )
       },
     })

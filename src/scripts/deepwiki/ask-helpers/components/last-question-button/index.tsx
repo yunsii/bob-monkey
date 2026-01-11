@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react'
+import { Button, Popover, Typography } from 'antd'
+import React, { useState } from 'react'
 
 import { useQuestionHistory } from '../../hooks/use-question-history'
-import HistoryTooltip from '../history-tooltip'
+import HistoryContent from '../history-content'
+
+const { Title } = Typography
 
 export interface LastQuestionButtonProps {
   element: HTMLTextAreaElement
@@ -9,69 +12,60 @@ export interface LastQuestionButtonProps {
 
 function LastQuestionButton(props: LastQuestionButtonProps) {
   const { element } = props
-  const [showTooltip, setShowTooltip] = useState(false)
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const [open, setOpen] = useState(false)
 
   const { history, handleLastQuestionClick, handleQuestionClick } = useQuestionHistory(element)
 
-  // 清理超时
-  useEffect(() => {
-    return () => {
-      if (hideTimeoutRef.current) {
-        clearTimeout(hideTimeoutRef.current)
-      }
-    }
-  }, [])
-
   const onQuestionClick = (question: string) => {
     handleQuestionClick(question)
-    setShowTooltip(false)
+    setOpen(false)
   }
 
-  const handleMouseEnter = () => {
-    // 清除隐藏延时
-    if (hideTimeoutRef.current) {
-      clearTimeout(hideTimeoutRef.current)
-      hideTimeoutRef.current = null
+  const handleClick = () => {
+    if (history.length > 0) {
+      setOpen(true)
+    } else {
+      handleLastQuestionClick()
     }
-    setShowTooltip(true)
-  }
-
-  const handleMouseLeave = () => {
-    // 延迟隐藏，给用户时间移动到 tooltip
-    hideTimeoutRef.current = setTimeout(() => {
-      setShowTooltip(false)
-    }, 200)
   }
 
   return (
-    <div
-      className='relative inline-block'
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <button
-        type='button'
-        onClick={handleLastQuestionClick}
-        disabled={history.length === 0}
-        className={
-          history.length === 0
-            ? 'cursor-not-allowed opacity-50'
-            : 'cursor-pointer opacity-100'
-        }
-      >
-        上次提问
-        {' '}
-        {history.length > 0 && `(${history.length})`}
-      </button>
-
-      {showTooltip && (
-        <HistoryTooltip
+    <Popover
+      content={(
+        <HistoryContent
           history={history}
           onQuestionClick={onQuestionClick}
         />
       )}
-    </div>
+      title={
+        history.length > 0
+          ? (
+              <Title level={5} style={{ margin: 0 }}>
+                历史问题
+                {' '}
+                <Typography.Text type='secondary' style={{ fontSize: 14 }}>
+                  (
+                  {history.length}
+                  /5)
+                </Typography.Text>
+              </Title>
+            )
+          : undefined
+      }
+      open={open}
+      onOpenChange={setOpen}
+      placement='topLeft'
+    >
+      <Button
+        type='text'
+        onClick={handleClick}
+        disabled={history.length === 0}
+      >
+        上次提问
+        {' '}
+        {history.length > 0 && `(${history.length})`}
+      </Button>
+    </Popover>
   )
 }
 
