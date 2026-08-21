@@ -103,24 +103,24 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 
 两仓库**没有共同 git 历史**（本仓库是拷贝式套模板），所以 git 无法三方合并，只能按文件同步。
 
-### 待迁移
+### 迁移进度
 
-| 批次 | 内容                                                                                               |
-| ---- | -------------------------------------------------------------------------------------------------- |
-| 1    | 工具链：依赖对齐上游（vite 8、vite-plugin-monkey 8、antd 6.6…），补 `ReactDOM.createRoot` 的 patch |
-| 2    | 命名空间 + UI 层：新增 `helpers/namespace.ts`、`detached` 定位、document 样式引用计数、弹层容器    |
-| 3    | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                               |
-| 4    | 配置系统：功能开关 + schema 配置面板 + 快捷键（约 1400 行）                                        |
-| 5    | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                            |
+| 批次 | 状态 | 内容                                                                                            |
+| ---- | ---- | ----------------------------------------------------------------------------------------------- |
+| 1    | ✅   | 工具链：依赖对齐上游（vite 8、vite-plugin-monkey 8、antd 6.6…），补 `ReactDOM.createRoot` patch |
+| 2    | ✅   | 命名空间 + UI 层：`helpers/namespace.ts`、`detached` 定位、document 样式引用计数、弹层容器      |
+| 3    | 待做 | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                            |
+| 4    | 待做 | 配置系统：功能开关 + schema 配置面板 + 快捷键（约 1400 行）                                     |
+| 5    | 待做 | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                         |
 
-批 1 里那个 `ReactDOM.createRoot` / `hydrateRoot` 的 `data:` patch 对本仓库有实际价值：
-现在只补了 `React.default`，缺 createRoot 那半时，antd 里带 Wave 的组件（`Button`、`Switch`）
-点一下就抛 `q is not a function`。
+批 2 已经移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本针对的现象是
+「SPA 路由返回后 antd 主题变量未挂载、Popover 背景透明」，而实测（deepwiki SPA 往返 +
+同一 mutation 批次连续三轮重建）CSS 变量都完好。
 
-批 2 会用上游版本覆盖 `helpers/react/shadow-root-helpers.tsx`，其中的 `React.lazy` 兜底
-**可以去掉** —— 实测（deepwiki SPA 往返 + 同一 mutation 批次连续三轮重建）antd 的 CSS 变量都
-完好。但那两轮测的是「变量有没有注入」，没有直接测原始现象（Popover 背景透明），所以删掉后
-补一次针对现象本身的验证：SPA 往返回来真的打开 Popover，断言背景色不是透明。
+⚠️ **仍待补的一次验证**：上面测的是「变量有没有注入」，没有直接测现象本身。
+`last-question-button` 的 Popover 挂在一个 `disabled={history.length === 0}` 的按钮上，
+而问答历史存在 `GM_setValue` 里、没法从页面播种，所以浏览器里点不开。
+在 deepwiki 上真的提一次问之后，往返一次再打开那个 Popover，断言背景色不是透明。
 
 ### 本仓库有意偏离上游
 
@@ -129,6 +129,9 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 - `src/helpers/logger.ts`、`src/helpers/ui/integrated.ts` 等处的 `bob-monkey` 字面量 ——
   上游已把它收敛到 `src/helpers/namespace.ts`，迁移后只需改那一处。
 - `eslint.config.ts` 里对 `.github/copilot-instructions.md` 的 ignore。
+- `src/hooks/ui.tsx` 里 `useCreateUis` 的 `createFn` 签名放宽成 `Promisable<UiLike | void>`
+  （上游是 `Promise<UiLike>`）—— 本仓库的脚本要先找锚点，找不到时提前返回、不创建 UI。
+  值得推回上游。
 
 `tailwind-config.css` 那行 `@layer` **不在**这个清单里 —— 它已经推回上游
 （`🐛 fix(style): declare layer order so Tailwind can override antd`），两边一致。

@@ -38,8 +38,8 @@ export interface ContentScriptInlinePositioningOptions {
 export interface ContentScriptOverlayPositioningOptions {
   position: 'overlay'
   /**
-   * The `z-index` used on the `wrapper` element. Set to a positive number to show your UI over website
-   * content.
+   * The `z-index` used on the `wrapper` element. Defaults to `2147483647` so the UI renders above
+   * page content.
    */
   zIndex?: number
   /**
@@ -56,21 +56,49 @@ export interface ContentScriptOverlayPositioningOptions {
 export interface ContentScriptModalPositioningOptions {
   position: 'modal'
   /**
-   * The `z-index` used on the `shadowHost`. Set to a positive number to show your UI over website
-   * content.
+   * The `z-index` used on the `shadowHost`. Defaults to `2147483647` so the UI renders above
+   * page content.
+   */
+  zIndex?: number
+}
+
+export interface ContentScriptDetachedPositioningOptions {
+  position: 'detached'
+  /**
+   * The `z-index` used on the `shadowHost`. Defaults to `2147483647` so the UI renders above
+   * page content.
+   *
+   * The host is `position: fixed`, which creates a stacking context — a `z-index` written on the
+   * content inside cannot escape it, so this is the only value that decides whether the page can
+   * cover your UI.
    */
   zIndex?: number
 }
 
 /**
- * Choose between `"inline"`, `"overlay"`, or `"modal"` positions.
+ *  Choose between `"inline"`, `"overlay"`, `"modal"`, or `"detached"` positions.
  *
- * ![Visualization of different types](https://wxt.dev/content-script-ui-position.png)
+ * - `"detached"` — The shadow host is taken out of the document flow with zero dimensions.
+ *   No positioning is applied to the inner content. Use when your UI handles its own
+ *   positioning entirely (e.g. fixed buttons, modals, drawers). Unlike `"modal"`, the host does
+ *   not blanket the page, so it is safe to leave mounted permanently.
+ *
+ *   Two constraints come with it:
+ *
+ *   1. The content must position itself with `position: fixed`. The host is `0x0` with
+ *      `overflow: hidden` and is the containing block for absolutely positioned descendants, so
+ *      `position: absolute` content collapses to zero size and gets clipped away. `fixed`
+ *      descendants resolve against the viewport and escape the clip.
+ *   2. `position: fixed` only resolves against the viewport while no ancestor of the host
+ *      establishes a fixed containing block (`transform`, `filter`, `backdrop-filter`,
+ *      `will-change`, `contain`). Keep `anchor` on `body` / `documentElement` rather than deep
+ *      inside page markup you do not control.
  */
 export type ContentScriptPositioningOptions
   = | ContentScriptInlinePositioningOptions
     | ContentScriptOverlayPositioningOptions
     | ContentScriptModalPositioningOptions
+    | ContentScriptDetachedPositioningOptions
 
 export interface ContentScriptAnchoredOptions {
   /**
