@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "typecheck": "tsc --noEmit",
+    "test": "node --test",
     "release": "bumpp"
   },
   "dependencies": {

@@ -44,6 +44,7 @@ export default defineConfig(async () => {
             '@/helpers/ui/integrated': ['createIntegratedUi'],
             '@/helpers/ui/shadow-root': ['createShadowRootUi'],
             '@/helpers/react/shadow-root-helpers': ['reactRenderInShadowRoot'],
+            '@/helpers/settings/open': ['openSettings'],
           },
           {
             from: '@/helpers/ui/shadow-root.ts',

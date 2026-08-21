@@ -109,8 +109,8 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 | ---- | ---- | ----------------------------------------------------------------------------------------------- |
 | 1    | ✅   | 工具链：依赖对齐上游（vite 8、vite-plugin-monkey 8、antd 6.6…），补 `ReactDOM.createRoot` patch |
 | 2    | ✅   | 命名空间 + UI 层：`helpers/namespace.ts`、`detached` 定位、document 样式引用计数、弹层容器      |
-| 3    | 待做 | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                            |
-| 4    | 待做 | 配置系统：功能开关 + schema 配置面板 + 快捷键（约 1400 行）                                     |
+| 3    | ✅   | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                            |
+| 4    | ✅   | 配置系统：功能开关 + schema 配置面板 + 快捷键                                                   |
 | 5    | 待做 | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                         |
 
 批 2 已经移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本针对的现象是
@@ -129,6 +129,9 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 - `src/helpers/logger.ts`、`src/helpers/ui/integrated.ts` 等处的 `bob-monkey` 字面量 ——
   上游已把它收敛到 `src/helpers/namespace.ts`，迁移后只需改那一处。
 - `eslint.config.ts` 里对 `.github/copilot-instructions.md` 的 ignore。
+- `src/helpers/settings/{open,entry}.tsx` 的 `HOST_NAME` 走 `` `${NAMESPACE}-settings…` `` 模板，
+  上游那边是硬编码的 `'starter-monkey-settings…'`。同理 `settings/keys.test.ts` 的存储前缀 ——
+  上游硬编码 `'starter-monkey:'`，任何 fork 拷过去测试都会直接失败。两处都值得推回上游。
 - `src/hooks/ui.tsx` 里 `useCreateUis` 的 `createFn` 签名放宽成 `Promisable<UiLike | void>`
   （上游是 `Promise<UiLike>`）—— 本仓库的脚本要先找锚点，找不到时提前返回、不创建 UI。
   值得推回上游。

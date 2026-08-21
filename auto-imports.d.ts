@@ -51,6 +51,7 @@ declare global {
   const lazy: typeof import('react').lazy
   const memo: typeof import('react').memo
   const monkeyWindow: typeof import('vite-plugin-monkey/dist/client').monkeyWindow
+  const openSettings: typeof import('@/helpers/settings/open').openSettings
   const reactRenderInShadowRoot: typeof import('@/helpers/react/shadow-root-helpers').reactRenderInShadowRoot
   const startTransition: typeof import('react').startTransition
   const tw: typeof import('tagged-classnames-free').tw
