@@ -18,6 +18,7 @@ const Script: Userscript = async () => {
   ui.mount()
 }
 
+Script.id = 'github-deepwiki-shortcut'
 Script.displayName = 'deepwiki-shortcut'
 Script.matches = ['https://github.com/*/*']
 

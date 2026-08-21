@@ -18,6 +18,7 @@ const Script: Userscript = async () => {
   ui.mount()
 }
 
+Script.id = 'deepwiki-ask-helpers'
 Script.displayName = 'deepwiki-ask-helpers'
 Script.matches = ['https://deepwiki.com/*']
 
