@@ -1,5 +1,8 @@
 # Copilot Instructions for Bob Monkey
 
+> 改动前请先读仓库根目录的 [AGENTS.md](../AGENTS.md)：那里记录了会反复踩的坑
+> （`@layer` 声明不能删、样式断言要等过渡结束、同名脚本会让断言读到旧产物）和上游同步状态。
+
 ## Communication Guidelines
 
 **Language Usage**: Always respond in the same language as the user's message. If the user writes in Chinese, respond in Chinese. If in English, respond in English.
