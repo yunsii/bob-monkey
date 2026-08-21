@@ -101,41 +101,40 @@ pnpm verify eval deepwiki.com "..."
 
 模板仓库：https://github.com/yunsii/starter-monkey
 
-**当前基线：`28ceb86`**（上游「🐛 fix: monkeyFetch fallback」，本仓库框架层内容与之一致）
+**当前基线：`113c5f6`**（上游「📝 docs: record two traps that make CSS assertions lie」）
+
+框架层已对齐到该提交。下面「有意偏离」之外的差异都应视为漏同步。
 
 下次同步先看清单：
 
 ```bash
 git remote add upstream git@github.com:yunsii/starter-monkey.git   # 只需一次
 git fetch upstream
-git log 28ceb86..upstream/master --oneline
-git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
+git log 113c5f6..upstream/master --oneline
+git diff 113c5f6..upstream/master -- src/helpers src/hooks src/contexts scripts
 ```
 
 两仓库**没有共同 git 历史**（本仓库是拷贝式套模板），所以 git 无法三方合并，只能按文件同步。
 
 ### 迁移进度
 
-| 批次 | 状态 | 内容                                                                                            |
-| ---- | ---- | ----------------------------------------------------------------------------------------------- |
-| 1    | ✅   | 工具链：依赖对齐上游（vite 8、vite-plugin-monkey 8、antd 6.6…），补 `ReactDOM.createRoot` patch |
-| 2    | ✅   | 命名空间 + UI 层：`helpers/namespace.ts`、`detached` 定位、document 样式引用计数、弹层容器      |
-| 3    | ✅   | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                            |
-| 4    | ✅   | 配置系统：功能开关 + schema 配置面板 + 快捷键                                                   |
-| 5    | ✅   | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                         |
+五个批次已全部完成（`90e6f5f` 工具链 → `4ee3531` 命名空间与 UI 层 → `e906335` `Script.id`
+→ `5f334a9` 配置系统 → `2867829` 验证循环与文档）。
 
-批 2 已经移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本针对的现象是
-「SPA 路由返回后 antd 主题变量未挂载、Popover 背景透明」，而实测（deepwiki SPA 往返 +
-同一 mutation 批次连续三轮重建）CSS 变量都完好。
-
-⚠️ **仍待补的一次验证**：上面测的是「变量有没有注入」，没有直接测现象本身。
-`last-question-button` 的 Popover 挂在一个 `disabled={history.length === 0}` 的按钮上，
-而问答历史存在 `GM_setValue` 里、没法从页面播种，所以浏览器里点不开。
-在 deepwiki 上真的提一次问之后，往返一次再打开那个 Popover，断言背景色不是透明。
+⚠️ **仍待补的一次验证**：批 2 移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本
+针对的现象是「SPA 路由返回后 antd 主题变量未挂载、Popover 背景透明」，实测（deepwiki SPA
+往返 + 同一 mutation 批次连续三轮重建）CSS 变量都完好 —— 但那测的是「变量有没有注入」，
+没有直接测现象本身。`last-question-button` 的 Popover 挂在一个
+`disabled={history.length === 0}` 的按钮上，而问答历史存在 `GM_setValue` 里、没法从页面播种，
+所以浏览器里点不开。在 deepwiki 上真的提一次问之后，往返一次再打开那个 Popover，
+断言背景色不是透明（记得等过渡结束再读）。
 
 ### 本仓库有意偏离上游
 
 - `src/scripts/*`、`src/helpers/form-utils.ts` —— 本仓库业务代码，上游不涉及，永不冲突。
+- **有意没拷的上游文件**：`config/locales/meta.ts`（userscript 名称/描述的 i18n，本仓库
+  直接取 `package.json`）、`src/scripts/{google,v2ex}/demo/`（模板示例）、`README.zh-CN.md`、
+  上游的 `AGENTS.md`（本仓库有自己的）。
 - `package.json` 的 name / version / description。
 - `src/helpers/logger.ts`、`src/helpers/ui/integrated.ts` 等处的 `bob-monkey` 字面量 ——
   上游已把它收敛到 `src/helpers/namespace.ts`，迁移后只需改那一处。
