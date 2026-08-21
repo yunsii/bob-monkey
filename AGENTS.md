@@ -63,28 +63,39 @@ userscript 元数据。因此：
 
 ## 验证
 
-至少 `pnpm lint && pnpm typecheck`。
+至少 `pnpm lint && pnpm typecheck && pnpm test`。
 
 改到 UI 在真实页面上的行为时，`pnpm build` 通过**不算数** —— 被页面盖住、被裁剪、样式没进
-shadow root、优先级被压，这些 build 一个都发现不了，必须在真实站点上断言。
-
-上游有一套不需要真人点鼠标的浏览器循环，本仓库尚未迁移（见下），可以直接借用：
+shadow root、优先级被压，这些 build 一个都发现不了，必须在真实站点上断言。用
+[docs/verify-loop.md](docs/verify-loop.md) 的浏览器循环，它不需要真人点鼠标：
 
 ```bash
-node ../starter-monkey/scripts/tampermonkey-cdp.mjs doctor          # 先查前提
-node ../starter-monkey/scripts/tampermonkey-cdp.mjs list            # 确认没有同名脚本并存
-pnpm dev                                                            # 另开一个终端
-node ../starter-monkey/scripts/tampermonkey-cdp.mjs install http://127.0.0.1:5173
-node ../starter-monkey/scripts/tampermonkey-cdp.mjs open https://deepwiki.com/facebook/react
-node ../starter-monkey/scripts/tampermonkey-cdp.mjs eval deepwiki.com "..."
+pnpm verify doctor                                   # 先逐条查前提
+pnpm verify list                                     # 确认没有同名脚本并存
+pnpm dev                                             # 另开一个终端
+pnpm verify install http://127.0.0.1:5173
+pnpm verify open https://deepwiki.com/facebook/react
+pnpm verify wait deepwiki.com "!!document.querySelector('[data-bob-monkey-shadow-root]')"
+pnpm verify eval deepwiki.com "..."
 ```
 
-`install` 走的是 vite-plugin-monkey 的通用入口（`__vite-plugin-monkey.install.user.js`），
-与项目名无关，所以上游那份工具对本仓库直接可用。前提是 Chrome 带
-`--remote-debugging-port=9222` 启动且已装 Tampermonkey，`doctor` 会逐条检查。
+默认走 dev server（有热更新）。只有在宿主页 CSP 拦住本地模块加载、或者要验证 `@require` /
+`externalGlobals` 这类**只存在于产物里**的东西时，才改用 `pnpm verify install-build`。
 
-⚠️ 那份工具的 `cleanup` 会删掉浏览器里**所有** `(local build)` 脚本，包括其他仓库留下的。
-要删本仓库的用 `remove "<脚本名> (local build)"`。
+⚠️ `pnpm verify cleanup` 会删掉浏览器里**所有** `(local build)` 脚本，包括其他仓库留下的。
+只想删本仓库的用 `pnpm verify remove "bob-monkey (local build)"`。
+
+## Task Routing
+
+只读匹配当前任务的那一篇，不要预加载全部。
+
+| 任务                                                           | 读                                                   |
+| -------------------------------------------------------------- | ---------------------------------------------------- |
+| shadow root UI 的定位方式、样式隔离、document 级 CSS、弹层容器 | [docs/ui.md](docs/ui.md)                             |
+| 在真实浏览器 / Tampermonkey 上验证脚本                         | [docs/verify-loop.md](docs/verify-loop.md)           |
+| 新增或修改一个用户脚本                                         | 上面「脚本的注入范围写在源码里」+ `src/scripts/*/*/` |
+| 命名前缀（DOM 属性、元素 id、CSS 变量、日志）                  | `src/helpers/namespace.ts`（只改这一处）             |
+| 功能的可配置项、配置面板                                       | `src/helpers/settings/types.ts` 的注释               |
 
 ## 上游同步
 
@@ -111,7 +122,7 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 | 2    | ✅   | 命名空间 + UI 层：`helpers/namespace.ts`、`detached` 定位、document 样式引用计数、弹层容器      |
 | 3    | ✅   | `Script.id`：三个脚本加 id（**定了不可改**，它是配置的存储命名空间）                            |
 | 4    | ✅   | 配置系统：功能开关 + schema 配置面板 + 快捷键                                                   |
-| 5    | 待做 | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                         |
+| 5    | ✅   | 验证循环与文档：`scripts/tampermonkey-cdp.mjs`、`docs/`                                         |
 
 批 2 已经移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本针对的现象是
 「SPA 路由返回后 antd 主题变量未挂载、Popover 背景透明」，而实测（deepwiki SPA 往返 +
@@ -129,6 +140,9 @@ git diff 28ceb86..upstream/master -- src/helpers src/hooks src/contexts scripts
 - `src/helpers/logger.ts`、`src/helpers/ui/integrated.ts` 等处的 `bob-monkey` 字面量 ——
   上游已把它收敛到 `src/helpers/namespace.ts`，迁移后只需改那一处。
 - `eslint.config.ts` 里对 `.github/copilot-instructions.md` 的 ignore。
+- `scripts/tampermonkey-cdp.mjs` 里本地构建的 `@namespace` 从 `package.json` 的 name 派生，
+  上游是硬编码的 `user/starter-monkey-local-build` —— 写死会让两个 fork 的本地构建被
+  Tampermonkey 认成同一个脚本。配套的测试也改成跟着包名走（上游硬编码了产物文件名）。
 - `src/helpers/settings/{open,entry}.tsx` 的 `HOST_NAME` 走 `` `${NAMESPACE}-settings…` `` 模板，
   上游那边是硬编码的 `'starter-monkey-settings…'`。同理 `settings/keys.test.ts` 的存储前缀 ——
   上游硬编码 `'starter-monkey:'`，任何 fork 拷过去测试都会直接失败。两处都值得推回上游。
