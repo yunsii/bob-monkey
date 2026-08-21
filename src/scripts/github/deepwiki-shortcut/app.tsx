@@ -36,7 +36,7 @@ export default function App() {
             title='在 DeepWiki 中查看此页面'
           >
             <span className={`
-              bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800
+              bg-linear-to-r from-blue-600 via-purple-600 to-blue-800
               bg-clip-text font-semibold text-transparent
             `}
             >

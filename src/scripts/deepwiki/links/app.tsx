@@ -23,7 +23,7 @@ export default function App() {
           <button
             type='button'
             className={`
-              flex size-8 cursor-pointer items-center justify-center rounded
+              flex size-8 cursor-pointer items-center justify-center rounded-sm
               hover:bg-gray-200
             `}
             onClick={() => {

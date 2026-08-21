@@ -30,7 +30,7 @@ export function HistoryPanel() {
   return (
     <div>
       <div className={`
-        border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4
+        border-b border-gray-200 bg-linear-to-r from-blue-50 to-indigo-50 p-4
         dark:border-gray-700 dark:from-blue-950 dark:to-indigo-950
       `}
       >
