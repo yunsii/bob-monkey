@@ -101,7 +101,7 @@ pnpm verify eval deepwiki.com "..."
 
 模板仓库：https://github.com/yunsii/starter-monkey
 
-**当前基线：`113c5f6`**（上游「📝 docs: record two traps that make CSS assertions lie」）
+**当前基线：`ea8b570`**（上游「🐛 fix(ui): lift the popup container so page z-index cannot bury popups」）
 
 框架层已对齐到该提交。下面「有意偏离」之外的差异都应视为漏同步。
 
@@ -110,8 +110,8 @@ pnpm verify eval deepwiki.com "..."
 ```bash
 git remote add upstream git@github.com:yunsii/starter-monkey.git   # 只需一次
 git fetch upstream
-git log 113c5f6..upstream/master --oneline
-git diff 113c5f6..upstream/master -- src/helpers src/hooks src/contexts scripts
+git log ea8b570..upstream/master --oneline
+git diff ea8b570..upstream/master -- src/helpers src/hooks src/contexts scripts
 ```
 
 两仓库**没有共同 git 历史**（本仓库是拷贝式套模板），所以 git 无法三方合并，只能按文件同步。
