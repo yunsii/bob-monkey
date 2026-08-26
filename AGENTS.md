@@ -121,13 +121,10 @@ git diff ea8b570..upstream/master -- src/helpers src/hooks src/contexts scripts
 五个批次已全部完成（`90e6f5f` 工具链 → `4ee3531` 命名空间与 UI 层 → `e906335` `Script.id`
 → `5f334a9` 配置系统 → `2867829` 验证循环与文档）。
 
-⚠️ **仍待补的一次验证**：批 2 移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本
-针对的现象是「SPA 路由返回后 antd 主题变量未挂载、Popover 背景透明」，实测（deepwiki SPA
-往返 + 同一 mutation 批次连续三轮重建）CSS 变量都完好 —— 但那测的是「变量有没有注入」，
-没有直接测现象本身。`last-question-button` 的 Popover 挂在一个
-`disabled={history.length === 0}` 的按钮上，而问答历史存在 `GM_setValue` 里、没法从页面播种，
-所以浏览器里点不开。在 deepwiki 上真的提一次问之后，往返一次再打开那个 Popover，
-断言背景色不是透明（记得等过渡结束再读）。
+批 2 移除了 `shadow-root-helpers.tsx` 里的 `React.lazy` 兜底。它原本针对的现象是「SPA 路由
+返回后 antd 主题变量未挂载、Popover 背景透明」—— 自动化实测（deepwiki SPA 往返 + 同一
+mutation 批次连续三轮重建）CSS 变量都完好，之后又在真实使用中人工确认 Popover 正常，
+所以那层兜底不必再加回来。
 
 ### 本仓库有意偏离上游
 
