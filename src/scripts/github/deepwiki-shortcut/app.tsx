@@ -1,11 +1,33 @@
 import { Button } from 'antd'
 
+import { acquireDocumentStyle } from '@/helpers/ui/document-styles'
 import useCreateUis from '@/hooks/ui'
 
 /** 登录后的新版头部：仓库面包屑在 AppHeader 里，锚点是面包屑的第二项（仓库名那项）。 */
 const MODERN_ANCHOR = '[data-testid="top-nav-center"] > nav > ol > li:nth-of-type(2)'
 /** 未登录时是旧版头部，`AppHeader` 整个不存在，仓库名在这个 `strong` 里。 */
 const LEGACY_ANCHOR = '#repository-container-header strong'
+
+/**
+ * 面包屑最后一项本不该画分隔符，GitHub 是这么关掉的：
+ *
+ *   .prc-Breadcrumbs-ItemWrapper-*::after            { border-right: …; content: "" }
+ *   .prc-Breadcrumbs-ItemWrapper-*:last-child::after { content: none }
+ *
+ * 分隔符是 `border-right` 画的斜线。问题出在 `:last-child` —— 它数的是 `ol` 的**所有**子元素，
+ * 所以只要末尾多出任何东西，最后一个面包屑项就不再是 last-child，会凭空多画一条分隔符。
+ * 我们自己插在最后一项之前正是为了不制造这种情况，但挡不住别的浏览器扩展：实测 Refined
+ * GitHub 会往这里追加一个显示 star 数的 `li`，此时无论我们插在哪，都有位置会翻车。
+ *
+ * `:last-of-type` 不够用 —— 它只按标签名数，而 Refined GitHub 追加的也是 `li`。
+ * 这里用 `:has(~ …)` 直接表达 GitHub 真正的意图：**后面再没有面包屑项**的那一项不画分隔符。
+ * 无论后面跟着的是我们的宿主（非 `li`）还是别人的 `li`，判断都成立。
+ *
+ * 实测把宿主放在 `ol` 里的五个不同位置（含完全移出），加上这条之后最后一项始终不画、
+ * 前面各项照常画；不带这条时其中一个位置会多出一条。`:has()` 不被支持时整条规则会被忽略，
+ * 退回浏览器原生行为，不会更糟。
+ */
+const SEPARATOR_FIX = '[data-testid="top-nav-center"] nav ol > li[class*="Breadcrumbs-ItemWrapper"]:not(:has(~ li[class*="Breadcrumbs-ItemWrapper"]))::after { content: none !important }'
 
 // GitHub 给登录用户和游客的是两套不同的仓库页布局，只挂其中一套就会有一半场景看不到入口。
 // 未登录访问一点都不罕见：别人分享的链接、无痕窗口、退登之后。
@@ -19,6 +41,8 @@ export default function App() {
     if (isLegacy && document.querySelector(MODERN_ANCHOR)) {
       return
     }
+
+    let releaseSeparatorFix: (() => void) | undefined
 
     return createShadowRootUi({
       name: 'deepwiki-shortcut-item',
@@ -53,6 +77,7 @@ export default function App() {
           shadowHost.style.alignSelf = 'center'
           shadowHost.style.order = '1'
           shadowHost.style.marginLeft = '8px'
+          releaseSeparatorFix = acquireDocumentStyle(SEPARATOR_FIX)
         }
         return reactRenderInShadowRoot(
           { uiContainer: container, shadow: shadowRoot, shadowHost },
@@ -78,6 +103,11 @@ export default function App() {
             </span>
           </Button>,
         )
+      },
+      onRemove: (root) => {
+        root?.unmount()
+        releaseSeparatorFix?.()
+        releaseSeparatorFix = undefined
       },
     })
   })
