@@ -90,7 +90,12 @@ export default function App() {
               </span>
             )}
             onClick={() => {
-              window.open(`https://deepwiki.com${location.pathname}`, '_blank')
+              // 只取 owner/repo。脚本在整个 `github.com/*/*` 上都会跑，而 GitHub 的子路径
+              // （`/wiki`、`/issues`、`/blob/…`）在 DeepWiki 那边没有对应页面，原样带过去
+              // 只会落到一个不存在的位置 —— 实测在 wiki 页点开会跳到
+              // `deepwiki.com/<owner>/<repo>/wiki`。
+              const [, owner, repo] = location.pathname.split('/')
+              window.open(`https://deepwiki.com/${owner}/${repo}`, '_blank')
             }}
             title='在 DeepWiki 中查看此页面'
           >
