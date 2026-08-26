@@ -26,6 +26,10 @@ const LEGACY_ANCHOR = '#repository-container-header strong'
  * 实测把宿主放在 `ol` 里的五个不同位置（含完全移出），加上这条之后最后一项始终不画、
  * 前面各项照常画；不带这条时其中一个位置会多出一条。`:has()` 不被支持时整条规则会被忽略，
  * 退回浏览器原生行为，不会更糟。
+ *
+ * 用一条静态 CSS、而不是「JS 发现多余元素再去修正」，正是因为那个 `li` 是扩展**异步**插进来的
+ * （实测同一个页面刷新几次，它时有时无）。CSS 规则对插入时机免疫，不必盯着 DOM 变化，
+ * 也就不会有「插进来的那一瞬间闪一下分隔符」这种缝隙。
  */
 const SEPARATOR_FIX = '[data-testid="top-nav-center"] nav ol > li[class*="Breadcrumbs-ItemWrapper"]:not(:has(~ li[class*="Breadcrumbs-ItemWrapper"]))::after { content: none !important }'
 
