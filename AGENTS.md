@@ -89,19 +89,20 @@ pnpm verify eval deepwiki.com "..."
 
 只读匹配当前任务的那一篇，不要预加载全部。
 
-| 任务                                                           | 读                                                   |
-| -------------------------------------------------------------- | ---------------------------------------------------- |
-| shadow root UI 的定位方式、样式隔离、document 级 CSS、弹层容器 | [docs/ui.md](docs/ui.md)                             |
-| 在真实浏览器 / Tampermonkey 上验证脚本                         | [docs/verify-loop.md](docs/verify-loop.md)           |
-| 新增或修改一个用户脚本                                         | 上面「脚本的注入范围写在源码里」+ `src/scripts/*/*/` |
-| 命名前缀（DOM 属性、元素 id、CSS 变量、日志）                  | `src/helpers/namespace.ts`（只改这一处）             |
-| 功能的可配置项、配置面板                                       | `src/helpers/settings/types.ts` 的注释               |
+| 任务                                                           | 读                                                                 |
+| -------------------------------------------------------------- | ------------------------------------------------------------------ |
+| shadow root UI 的定位方式、样式隔离、document 级 CSS、弹层容器 | [docs/ui.md](docs/ui.md)                                           |
+| 在真实浏览器 / Tampermonkey 上验证脚本                         | [docs/verify-loop.md](docs/verify-loop.md)                         |
+| 新增或修改一个用户脚本                                         | 上面「脚本的注入范围写在源码里」+ `src/scripts/*/*/`               |
+| 命名前缀（DOM 属性、元素 id、CSS 变量、日志）                  | `src/helpers/namespace.ts`（只改这一处）                           |
+| 功能的可配置项、配置面板                                       | `src/helpers/settings/types.ts` 的注释                             |
+| 新增纯逻辑模块，或给 helper 加日志（能否被 `node --test` 跑）  | [docs/verify-loop.md](docs/verify-loop.md)「不需要浏览器的那一半」 |
 
 ## 上游同步
 
 模板仓库：https://github.com/yunsii/starter-monkey
 
-**当前基线：`ea8b570`**（上游「🐛 fix(ui): lift the popup container so page z-index cannot bury popups」）
+**当前基线：`a2bc2a2`**（上游「📝 docs(verify-loop): 记下变异检验的做法与还原时的坑」）
 
 框架层已对齐到该提交。下面「有意偏离」之外的差异都应视为漏同步。
 
@@ -110,8 +111,8 @@ pnpm verify eval deepwiki.com "..."
 ```bash
 git remote add upstream git@github.com:yunsii/starter-monkey.git   # 只需一次
 git fetch upstream
-git log ea8b570..upstream/master --oneline
-git diff ea8b570..upstream/master -- src/helpers src/hooks src/contexts scripts
+git log a2bc2a2..upstream/master --oneline
+git diff a2bc2a2..upstream/master -- src/helpers src/hooks src/contexts scripts
 ```
 
 两仓库**没有共同 git 历史**（本仓库是拷贝式套模板），所以 git 无法三方合并，只能按文件同步。
@@ -139,12 +140,19 @@ mutation 批次连续三轮重建）CSS 变量都完好，之后又在真实使�
 - `scripts/tampermonkey-cdp.mjs` 里本地构建的 `@namespace` 从 `package.json` 的 name 派生，
   上游是硬编码的 `user/starter-monkey-local-build` —— 写死会让两个 fork 的本地构建被
   Tampermonkey 认成同一个脚本。配套的测试也改成跟着包名走（上游硬编码了产物文件名）。
-- `src/helpers/settings/{open,entry}.tsx` 的 `HOST_NAME` 走 `` `${NAMESPACE}-settings…` `` 模板，
-  上游那边是硬编码的 `'starter-monkey-settings…'`。同理 `settings/keys.test.ts` 的存储前缀 ——
-  上游硬编码 `'starter-monkey:'`，任何 fork 拷过去测试都会直接失败。两处都值得推回上游。
+- `src/helpers/settings/keys.test.ts` 断言里的功能 id 用 `deepwiki-links`，上游用 `v2ex-demo`
+  （本仓库没拷 demo）。存储前缀两边一致，都从 `NAMESPACE` 推导。
+- `docs/verify-loop.md` 与 `docs/ui.md` 里的示例命令用 `bob-monkey` / deepwiki，上游用
+  `Starter Monkey` / v2ex；verify-loop「文档里的名字不是写死的」那条提示也跟着换了主语
+  （本仓库文档里写的就是真实值）。同步这两篇后记得重跑命名替换。
+- `.vscode/*`、`CLAUDE.md`、`tsconfig.node.json` —— 本仓库的编辑器与工具配置，上游不涉及。
 - `src/hooks/ui.tsx` 里 `useCreateUis` 的 `createFn` 签名放宽成 `Promisable<UiLike | void>`
   （上游是 `Promise<UiLike>`）—— 本仓库的脚本要先找锚点，找不到时提前返回、不创建 UI。
   值得推回上游。
 
 `tailwind-config.css` 那行 `@layer` **不在**这个清单里 —— 它已经推回上游
 （`🐛 fix(style): declare layer order so Tailwind can override antd`），两边一致。
+
+`settings/{open,entry}.tsx` 的 `HOST_NAME` 与 `settings/keys.test.ts` 的存储前缀原本也在清单里
+（本仓库从 `NAMESPACE` 推导，上游硬编码 `starter-monkey`）—— 上游已在 `3ffa0ff` / `905e995`
+采纳同样的做法，这次同步后两边一致，故从清单移除。

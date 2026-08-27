@@ -9,8 +9,10 @@ import {
 } from '@/helpers/settings/revision'
 import { createSettingsStore } from '@/helpers/settings/storage'
 import { schemaDefaults } from '@/helpers/settings/types'
-import type { SettingsSchema, SettingsValues } from '@/helpers/settings/types'
+import type { SettingsField, SettingsSchema, SettingsValues } from '@/helpers/settings/types'
+import { useFeatureActions } from '@/hooks/settings'
 
+import SettingsActions from './actions'
 import SettingsFieldRow from './field'
 
 export interface SettingsSectionProps {
@@ -71,6 +73,35 @@ export default function SettingsSection(props: SettingsSectionProps) {
     schema.fields?.[key]?.onChange?.(value as never)
   }
 
+  // 呈现顺序由框架定死（见 `SettingsSchema` 的注释）：常规字段 → 动作 → render → 进阶字段。
+  // 进阶字段单独拆出来而不是靠声明顺序，是因为它要落在动作**之后**，
+  // 而动作是运行时注册的、声明方看不见
+  const renderField = ([key, field]: [string, SettingsField]) => {
+    if (field.visible && !field.visible(values)) {
+      return null
+    }
+    return (
+      <SettingsFieldRow
+        key={key}
+        field={field}
+        value={values[key]}
+        onChange={(value) => write(key, value)}
+      />
+    )
+  }
+
+  const actions = useFeatureActions(namespace)
+  const normalRows = fields.filter(([, field]) => !field.advanced).map(renderField).filter(Boolean)
+  const advancedRows = fields.filter(([, field]) => field.advanced).map(renderField).filter(Boolean)
+  const customRows = schema.render?.({ store, values, setValue: write })
+
+  // 分隔线只在**上面真的有东西**时才画：一条悬空的线比没有线更难解释。
+  // 「上面有东西」不能只看常规字段声明了几个 —— 它们可能全被 `visible` 过滤掉，
+  // 动作数量又只有注册表知道，所以三样都得实际问一遍。
+  const hasContentAbove = normalRows.length > 0
+    || actions.length > 0
+    || Boolean(customRows)
+
   return (
     <section className='flex flex-col gap-2'>
       <h3 className='m-0 text-sm font-semibold text-gray-800'>{title}</h3>
@@ -78,21 +109,24 @@ export default function SettingsSection(props: SettingsSectionProps) {
         <p className='m-0 text-xs text-gray-400'>{schema.description}</p>
       )}
 
-      {fields.map(([key, field]) => {
-        if (field.visible && !field.visible(values)) {
-          return null
-        }
-        return (
-          <SettingsFieldRow
-            key={key}
-            field={field}
-            value={values[key]}
-            onChange={(value) => write(key, value)}
-          />
-        )
-      })}
+      {normalRows}
 
-      {schema.render?.({ store, values, setValue: write })}
+      <SettingsActions actions={actions} />
+
+      {customRows}
+
+      {/*
+        不给标题：加一行「进阶」会让这一小段看起来像另一个分组，而它属于同一个功能。
+      */}
+      {advancedRows.length > 0 && (
+        <div className={`
+          flex flex-col gap-2
+          ${hasContentAbove ? 'mt-1 border-t border-gray-200 pt-3' : ''}
+        `}
+        >
+          {advancedRows}
+        </div>
+      )}
     </section>
   )
 }
