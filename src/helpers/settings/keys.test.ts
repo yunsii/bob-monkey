@@ -13,10 +13,14 @@ import {
   settingKey,
 } from './keys.ts'
 
+// 前缀从 NAMESPACE 推导，而不是写死 —— 否则 AGENTS.md 那句「fork 后改 namespace.ts
+// 这一处」就是假的：还得回来改测试。这里断言的是**键的结构**，不是某个具体脚本名。
+const PREFIX = `${NAMESPACE}:`
+
 describe('键构造', () => {
   it('命名空间是功能 id，键里不含站点信息', () => {
-    assert.equal(settingKey('deepwiki-links', 'apiBase'), `${NAMESPACE}:deepwiki-links.apiBase`)
-    assert.equal(settingKey('common', 'showFloatingEntry'), `${NAMESPACE}:common.showFloatingEntry`)
+    assert.equal(settingKey('deepwiki-links', 'apiBase'), `${PREFIX}deepwiki-links.apiBase`)
+    assert.equal(settingKey('common', 'showFloatingEntry'), `${PREFIX}common.showFloatingEntry`)
   })
 
   it('同一个功能在不同站点用同一个键，因此天然共用配置', () => {
@@ -27,7 +31,7 @@ describe('键构造', () => {
 
 describe('反解', () => {
   it('拆出命名空间与字段名', () => {
-    assert.deepEqual(parseKey(`${NAMESPACE}:ns.field`), { namespace: 'ns', field: 'field' })
+    assert.deepEqual(parseKey(`${PREFIX}ns.field`), { namespace: 'ns', field: 'field' })
     assert.deepEqual(parseKey(settingKey('coco-i18n-inspect', 'env')), {
       namespace: 'coco-i18n-inspect',
       field: 'env',
@@ -36,10 +40,12 @@ describe('反解', () => {
 
   it('不是本模板的键返回 null', () => {
     // GM 存储是整个脚本共用的，将来放别的东西时不能误判成配置项
-    assert.equal(parseKey('someone-else:ns.field'), null)
-    assert.equal(parseKey(`${NAMESPACE}:nodot`), null)
-    assert.equal(parseKey(`${NAMESPACE}:.field`), null)
-    assert.equal(parseKey(`${NAMESPACE}:ns.`), null)
+    // 前缀也从 NAMESPACE 推导：写死一个名字的话，fork 的人万一取了同名，
+    // 这条断言会反过来红 —— 而「fork 只改 namespace.ts 一处」是本仓库承诺过的
+    assert.equal(parseKey(`not-${NAMESPACE}:ns.field`), null)
+    assert.equal(parseKey(`${PREFIX}nodot`), null)
+    assert.equal(parseKey(`${PREFIX}.field`), null)
+    assert.equal(parseKey(`${PREFIX}ns.`), null)
   })
 })
 
