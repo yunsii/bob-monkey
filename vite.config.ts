@@ -9,6 +9,7 @@ import type { Plugin } from 'vite'
 // 带 import attributes / 文件扩展名，否则 Vite 8 的 native config loader 会警告
 // （它将在未来的大版本里成为默认）
 import { description, name } from './package.json' with { type: 'json' }
+import { pxUtilities } from './scripts/px-utilities.ts'
 import { getScriptInfos, printScriptInfos } from './scripts/script-infos.ts'
 
 // https://vitejs.dev/config/
@@ -55,6 +56,9 @@ export default defineConfig(async () => {
       }),
       react(),
       tailwindcss(),
+      // 必须紧跟 `tailwindcss()`：两者都是 `enforce: 'post'`，同相位内按数组顺序执行，
+      // 排到它前面就只能拿到 `@import 'tailwindcss'` 那一行，一个 rem 都换不到且不报错
+      pxUtilities(),
       monkey({
         entry: 'src/main.ts',
         userscript: {
