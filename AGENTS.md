@@ -89,20 +89,20 @@ pnpm verify eval deepwiki.com "..."
 
 只读匹配当前任务的那一篇，不要预加载全部。
 
-| 任务                                                           | 读                                                                 |
-| -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| shadow root UI 的定位方式、样式隔离、document 级 CSS、弹层容器 | [docs/ui.md](docs/ui.md)                                           |
-| 在真实浏览器 / Tampermonkey 上验证脚本                         | [docs/verify-loop.md](docs/verify-loop.md)                         |
-| 新增或修改一个用户脚本                                         | 上面「脚本的注入范围写在源码里」+ `src/scripts/*/*/`               |
-| 命名前缀（DOM 属性、元素 id、CSS 变量、日志）                  | `src/helpers/namespace.ts`（只改这一处）                           |
-| 功能的可配置项、配置面板                                       | `src/helpers/settings/types.ts` 的注释                             |
-| 新增纯逻辑模块，或给 helper 加日志（能否被 `node --test` 跑）  | [docs/verify-loop.md](docs/verify-loop.md)「不需要浏览器的那一半」 |
+| 任务                                                                         | 读                                                                 |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| shadow root UI 的定位方式、样式隔离、document 级 CSS、弹层容器、宿主页根字号 | [docs/ui.md](docs/ui.md)                                           |
+| 在真实浏览器 / Tampermonkey 上验证脚本                                       | [docs/verify-loop.md](docs/verify-loop.md)                         |
+| 新增或修改一个用户脚本                                                       | 上面「脚本的注入范围写在源码里」+ `src/scripts/*/*/`               |
+| 命名前缀（DOM 属性、元素 id、CSS 变量、日志）                                | `src/helpers/namespace.ts`（只改这一处）                           |
+| 功能的可配置项、配置面板                                                     | `src/helpers/settings/types.ts` 的注释                             |
+| 新增纯逻辑模块，或给 helper 加日志（能否被 `node --test` 跑）                | [docs/verify-loop.md](docs/verify-loop.md)「不需要浏览器的那一半」 |
 
 ## 上游同步
 
 模板仓库：https://github.com/yunsii/starter-monkey
 
-**当前基线：`a2bc2a2`**（上游「📝 docs(verify-loop): 记下变异检验的做法与还原时的坑」）
+**当前基线：`1f4d0f9`**（上游「🐛 fix(scroll-lock): 锁滚动改用注入样式表加 scrollbar-gutter，抽屉开合不再抖宽度」）
 
 框架层已对齐到该提交。下面「有意偏离」之外的差异都应视为漏同步。
 
@@ -111,8 +111,8 @@ pnpm verify eval deepwiki.com "..."
 ```bash
 git remote add upstream git@github.com:yunsii/starter-monkey.git   # 只需一次
 git fetch upstream
-git log a2bc2a2..upstream/master --oneline
-git diff a2bc2a2..upstream/master -- src/helpers src/hooks src/contexts scripts
+git log 1f4d0f9..upstream/master --oneline
+git diff 1f4d0f9..upstream/master -- src/helpers src/hooks src/contexts scripts
 ```
 
 两仓库**没有共同 git 历史**（本仓库是拷贝式套模板），所以 git 无法三方合并，只能按文件同步。
